@@ -1,0 +1,70 @@
+services:
+  api: &main_app
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: yagit:${YAGIT_VERSION:-latest}
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      YAGIT_HOST: 0.0.0.0
+      YAGIT_DB_HOST: yagit-db
+      YAGIT_DB_PORT: 5432
+      YAGIT_DB_USER: yagit
+      YAGIT_DB_PASS: yagit
+      YAGIT_DB_BASE: yagit
+      YAGIT_REDIS_HOST: yagit-redis
+
+  db:
+    image: postgres:16.3-bullseye
+    hostname: yagit-db
+    environment:
+      POSTGRES_PASSWORD: "yagit"
+      POSTGRES_USER: "yagit"
+      POSTGRES_DB: "yagit"
+    volumes:
+      - yagit-db-data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: pg_isready -U yagit
+      interval: 2s
+      timeout: 3s
+      retries: 40
+
+  migrator:
+    image: yagit:${YAGIT_VERSION:-latest}
+    restart: "no"
+    command: alembic upgrade head
+    environment:
+      YAGIT_DB_HOST: yagit-db
+      YAGIT_DB_PORT: 5432
+      YAGIT_DB_USER: yagit
+      YAGIT_DB_PASS: yagit
+      YAGIT_DB_BASE: yagit
+    depends_on:
+      db:
+        condition: service_healthy
+
+  redis:
+    image: bitnami/redis:6.2.5
+    hostname: "yagit-redis"
+    restart: always
+    environment:
+      ALLOW_EMPTY_PASSWORD: "yes"
+    healthcheck:
+      test: redis-cli ping
+      interval: 1s
+      timeout: 3s
+      retries: 50
+
+
+
+volumes:
+  yagit-db-data:
+    name: yagit-db-data
