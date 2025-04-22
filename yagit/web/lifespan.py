@@ -4,7 +4,6 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from yagit.services.redis.lifespan import init_redis, shutdown_redis
 from yagit.settings import settings
 
 
@@ -43,10 +42,7 @@ async def lifespan_setup(
 
     app.middleware_stack = None
     _setup_db(app)
-    init_redis(app)
     app.middleware_stack = app.build_middleware_stack()
 
     yield
     await app.state.db_engine.dispose()
-
-    await shutdown_redis(app)

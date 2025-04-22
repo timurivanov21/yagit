@@ -13,7 +13,7 @@ router = APIRouter()
 @router.get("/", response_model=list[RuleRead])
 async def list_rules(project_id: int, session: AsyncSession = Depends(get_db_session)):
     result = await session.execute(
-        select(AutomationRule).where(AutomationRule.project_id == project_id),
+        select(AutomationRule).where(AutomationRule.project_id == project_id),  # type: ignore
     )
     return result.scalars().all()
 

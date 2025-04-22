@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel
 
 from yagit.db.models.automation_rule import GitEventType
@@ -7,8 +5,9 @@ from yagit.db.models.automation_rule import GitEventType
 
 class RuleBase(BaseModel):
     event_type: GitEventType
-    target_branch: Optional[str] = None
-    target_column: str
+    target_branch: str | None = None
+    tracker_column_id: str
+    tracker_column_name: str | None = None
 
 
 class RuleCreate(RuleBase):

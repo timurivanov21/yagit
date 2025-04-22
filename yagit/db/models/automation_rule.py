@@ -1,22 +1,20 @@
-from enum import Enum
+from enum import StrEnum
 
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.sqltypes import Enum
 
 from yagit.db.base import Base
 from yagit.db.models.mixins import TimestampMixin
 
 
-class GitEventType(str, Enum):
+class GitEventType(StrEnum):
     """GitLab события, на которые можно реагировать в правилах."""
 
     BRANCH_CREATE = "branch_create"
     MERGE_REQUEST_OPENED = "merge_request_opened"
     MERGE_REQUEST_MERGED = "merge_request_merged"
     MERGE_REQUEST_CLOSED = "merge_request_closed"
-
-    def __str__(self) -> str:
-        return self.value
 
 
 class AutomationRule(TimestampMixin, Base):
@@ -40,7 +38,7 @@ class AutomationRule(TimestampMixin, Base):
         nullable=False,
     )
     event_type: GitEventType = Column(
-        Enum(GitEventType, name="git_event_type"),
+        Enum(GitEventType),
         nullable=False,
         index=True,
     )

@@ -1,12 +1,14 @@
 import enum
 from pathlib import Path
 from tempfile import gettempdir
-from typing import Optional
 
+from environs import Env
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from yarl import URL
 
 TEMP_DIR = Path(gettempdir())
+env = Env()
+env.read_env()
 
 
 class LogLevel(str, enum.Enum):
@@ -33,26 +35,19 @@ class Settings(BaseSettings):
     # quantity of workers for uvicorn
     workers_count: int = 1
     # Enable uvicorn reloading
-    reload: bool = False
+    reload: bool = True
 
     # Current environment
     environment: str = "dev"
 
     log_level: LogLevel = LogLevel.INFO
     # Variables for the database
-    db_host: str = "localhost"
-    db_port: int = 5432
-    db_user: str = "yagit"
-    db_pass: str = "yagit"
-    db_base: str = "admin"
+    db_host: str = env.str("DB_HOST")
+    db_port: int = env.int("DB_PORT")
+    db_user: str = env.str("DB_USER")
+    db_pass: str = env.str("DB_PASS")
+    db_base: str = env.str("DB_BASE")
     db_echo: bool = False
-
-    # Variables for Redis
-    redis_host: str = "yagit-redis"
-    redis_port: int = 6379
-    redis_user: Optional[str] = None
-    redis_pass: Optional[str] = None
-    redis_base: Optional[int] = None
 
     @property
     def db_url(self) -> URL:
@@ -68,25 +63,6 @@ class Settings(BaseSettings):
             user=self.db_user,
             password=self.db_pass,
             path=f"/{self.db_base}",
-        )
-
-    @property
-    def redis_url(self) -> URL:
-        """
-        Assemble REDIS URL from settings.
-
-        :return: redis URL.
-        """
-        path = ""
-        if self.redis_base is not None:
-            path = f"/{self.redis_base}"
-        return URL.build(
-            scheme="redis",
-            host=self.redis_host,
-            port=self.redis_port,
-            user=self.redis_user,
-            password=self.redis_pass,
-            path=path,
         )
 
     model_config = SettingsConfigDict(

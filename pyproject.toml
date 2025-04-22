@@ -25,6 +25,7 @@ redis = {version = "^5.2.1", extras = ["hiredis"]}
 aiofiles = "^24.1.0"
 httptools = "^0.6.4"
 pymongo = "^4.10.1"
+environs = "^14.1.1"
 
 
 [tool.poetry.group.dev.dependencies]
