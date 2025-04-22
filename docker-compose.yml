@@ -51,19 +51,6 @@ services:
       db:
         condition: service_healthy
 
-  redis:
-    image: bitnami/redis:6.2.5
-    hostname: "yagit-redis"
-    restart: always
-    environment:
-      ALLOW_EMPTY_PASSWORD: "yes"
-    healthcheck:
-      test: redis-cli ping
-      interval: 1s
-      timeout: 3s
-      retries: 50
-
-
 
 volumes:
   yagit-db-data:
