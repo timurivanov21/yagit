@@ -18,7 +18,8 @@ async def list_projects(session: AsyncSession = Depends(get_db_session)):
 
 @router.post("/", response_model=ProjectRead, status_code=status.HTTP_201_CREATED)
 async def create_project(
-    payload: ProjectCreate, session: AsyncSession = Depends(get_db_session),
+    payload: ProjectCreate,
+    session: AsyncSession = Depends(get_db_session),
 ):
     project = Project(**payload.dict())
     session.add(project)
@@ -32,19 +33,22 @@ async def get_project(project_id: int, session: AsyncSession = Depends(get_db_se
     project = await session.get(Project, project_id)
     if not project:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found",
         )
     return project
 
 
 @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_project(
-    project_id: int, session: AsyncSession = Depends(get_db_session),
+    project_id: int,
+    session: AsyncSession = Depends(get_db_session),
 ):
     project = await session.get(Project, project_id)
     if not project:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found",
         )
     await session.delete(project)
     await session.commit()

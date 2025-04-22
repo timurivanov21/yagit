@@ -40,7 +40,9 @@ class AutomationRule(TimestampMixin, Base):
         nullable=False,
     )
     event_type: GitEventType = Column(
-        Enum(GitEventType, name="git_event_type"), nullable=False, index=True,
+        Enum(GitEventType, name="git_event_type"),
+        nullable=False,
+        index=True,
     )
     target_branch: str | None = Column(String(255), nullable=True)
     tracker_column_id: str = Column(String(64), nullable=False)

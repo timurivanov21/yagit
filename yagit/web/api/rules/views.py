@@ -12,7 +12,9 @@ router = APIRouter()
 
 @router.get("/", response_model=list[RuleRead])
 async def list_rules(project_id: int, session: AsyncSession = Depends(get_db_session)):
-    result = await session.execute(select(AutomationRule).where(AutomationRule.project_id == project_id))
+    result = await session.execute(
+        select(AutomationRule).where(AutomationRule.project_id == project_id),
+    )
     return result.scalars().all()
 
 
@@ -25,7 +27,8 @@ async def create_rule(
     project = await session.get(Project, project_id)
     if not project:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found",
         )
 
     rule = AutomationRule(project_id=project_id, **payload.dict())
@@ -37,12 +40,15 @@ async def create_rule(
 
 @router.delete("/{rule_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_rule(
-    project_id: int, rule_id: int, session: AsyncSession = Depends(get_db_session),
+    project_id: int,
+    rule_id: int,
+    session: AsyncSession = Depends(get_db_session),
 ):
     rule = await session.get(AutomationRule, rule_id)
     if not rule or rule.project_id != project_id:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Rule not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Rule not found",
         )
     await session.delete(rule)
     await session.commit()
