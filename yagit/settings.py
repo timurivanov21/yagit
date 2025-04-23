@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     # Enable uvicorn reloading
     reload: bool = True
 
+    TRACKER_TOKEN: str = env.str("TRACKER_TOKEN")
+    TRACKER_ORG_ID: str = env.str("TRACKER_ORG_ID")
+
     # Current environment
     environment: str = "dev"
 
