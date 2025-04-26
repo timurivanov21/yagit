@@ -8,9 +8,7 @@ if TYPE_CHECKING:
 
 class ProjectBase(BaseModel):
     name: str = Field(..., max_length=255)
-    gitlab_url: str
     gitlab_token: str
-    tracker_url: str
     tracker_token: str
 
 
@@ -18,8 +16,9 @@ class ProjectCreate(ProjectBase):
     """Схема создания проекта."""
 
 
-class ProjectRead(ProjectBase):
+class ProjectRead(BaseModel):
     id: int
+    name: str = Field(..., max_length=255)
 
     class Config:
         orm_mode = True
@@ -27,3 +26,22 @@ class ProjectRead(ProjectBase):
 
 class ProjectReadWithRules(ProjectRead):
     rules: List["RuleRead"] = []
+
+
+class TokenIn(BaseModel):
+    access_token: str = Field(..., description="GitLab personal / project token")
+
+
+class GitLabProject(BaseModel):
+    gitlab_project_id: int
+    name: str
+
+
+class ProjectsResponse(BaseModel):
+    repositories: list[GitLabProject]
+    project_id: int
+
+
+class WebhookPayload(BaseModel):
+    project_id: int
+    gitlab_project_id: int

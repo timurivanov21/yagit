@@ -16,6 +16,10 @@ class GitEventType(StrEnum):
     MERGE_REQUEST_MERGED = "merge_request_merged"
     MERGE_REQUEST_CLOSED = "merge_request_closed"
 
+    @property
+    def is_merge(self) -> bool:
+        return self.name.startswith("MERGE_REQUEST")
+
 
 class AutomationRule(TimestampMixin, Base):
     """Правило автоматизации перемещения карточек по событиям GitLab."""

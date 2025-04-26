@@ -49,6 +49,9 @@ class Settings(BaseSettings):
     db_base: str = env.str("DB_BASE")
     db_echo: bool = False
 
+    webhook_secret_length: int = env.int("WEBHOOK_SECRET_LENGTH")
+    backend_public_url: str = env.str("BACKEND_PUBLIC_URL")
+
     @property
     def db_url(self) -> URL:
         """

@@ -1,11 +1,13 @@
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from yagit.db.dependencies import get_db_session
 from yagit.db.models.project import Project
+from yagit.services.gitlab_client import GitLabClient
 
-from .schema import ProjectCreate, ProjectRead
+from .schema import ProjectCreate, ProjectRead, ProjectsResponse
 
 router = APIRouter()
 
@@ -16,16 +18,26 @@ async def list_projects(session: AsyncSession = Depends(get_db_session)):
     return result.scalars().all()
 
 
-@router.post("/", response_model=ProjectRead, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ProjectsResponse, status_code=status.HTTP_201_CREATED)
 async def create_project(
     payload: ProjectCreate,
     session: AsyncSession = Depends(get_db_session),
-):
+) -> ProjectsResponse:
     project = Project(**payload.dict())
     session.add(project)
     await session.commit()
     await session.refresh(project)
-    return project
+
+    async with GitLabClient(payload.gitlab_token) as gl:
+        try:
+            projects = await gl.list_projects()
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid token") from exc
+
+    return ProjectsResponse(
+        project_id=project.id,
+        repositories=projects,
+    )
 
 
 @router.get("/{project_id}", response_model=ProjectRead)

@@ -23,9 +23,7 @@ def upgrade() -> None:
         "projects",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("name", sa.String(length=255), nullable=False),
-        sa.Column("gitlab_url", sa.String(length=512), nullable=False),
         sa.Column("gitlab_token", sa.Text(), nullable=False),
-        sa.Column("tracker_url", sa.String(length=512), nullable=False),
         sa.Column("tracker_token", sa.Text(), nullable=False),
         sa.Column(
             "created_at",

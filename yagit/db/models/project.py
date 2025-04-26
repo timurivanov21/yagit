@@ -12,10 +12,10 @@ class Project(TimestampMixin, Base):
 
     id: int = Column(Integer, primary_key=True, index=True)
     name: str = Column(String(255), nullable=False, unique=True)
-    gitlab_url: str = Column(String(512), nullable=False)
-    gitlab_token: str = Column(Text, nullable=False)
-    tracker_url: str = Column(String(512), nullable=False)
     tracker_token: str = Column(Text, nullable=False)
+    gitlab_token: str = Column(Text, nullable=False)
+    gitlab_webhook_secret: str = Column(Text, nullable=True)
+    gitlab_project_id: int = Column(Integer, nullable=True)
 
     rules = relationship(
         "AutomationRule",
