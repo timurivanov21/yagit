@@ -12,7 +12,9 @@ from yagit.settings import settings
 def _compute_event_flags(rules: list[AutomationRule]) -> dict[str, bool]:
     """Вернуть dict флагов для GitLab‑хук‑создания."""
 
-    push_events = any(r.event_type == GitEventType.BRANCH_CREATE for r in rules)
+    push_events = any(
+        r.event_type in {GitEventType.BRANCH_CREATE, GitEventType.PUSH} for r in rules
+    )
     merge_events = any(r.event_type.is_merge for r in rules)
     return {
         "push_events": push_events,

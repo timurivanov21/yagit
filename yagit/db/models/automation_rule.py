@@ -12,6 +12,7 @@ class GitEventType(StrEnum):
     """GitLab события, на которые можно реагировать в правилах."""
 
     BRANCH_CREATE = "branch_create"
+    PUSH = "push"
     MERGE_REQUEST_OPENED = "merge_request_opened"
     MERGE_REQUEST_MERGED = "merge_request_merged"
     MERGE_REQUEST_CLOSED = "merge_request_closed"
