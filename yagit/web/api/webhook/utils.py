@@ -40,34 +40,6 @@ def _parse_event_type(payload: dict) -> tuple[GitEventType | None, str | None, s
     return None, None, ""
 
 
-async def apply_rule(
-    rule: RuleDTO,
-    issue_key: str,
-    event_type: GitEventType,
-    payload: dict,
-):
-    async with TrackerClient(
-        token=rule.tracker_token,
-        org_id=rule.tracker_org_id,
-    ) as tr:
-        await tr.move_issue(issue_key, rule.tracker_column_id)
-
-        if event_type is GitEventType.PUSH:
-            urls = [c["url"] for c in payload.get("commits", [])]
-            if urls:
-                await tr.add_comment(issue_key, "\n".join(urls))
-
-
 def extract_issue_key(text: str) -> str | None:
-    """
-    Возвращает первый найденный ключ задачи (`ABC-123`) в *любом* регистре.
-
-    ▸ Понимает названия веток `feature/PROJ-7-new-ui`, коммиты
-      `Fix bug in proj-42`, тэги `#APP-8` или `[ab-1]`.
-
-    ▸ Не чувствителен к регистру, на выходе всегда UPPERCASE.
-
-    ▸ Если ключ не найден — возвращает `None`.
-    """
     m = _ISSUE_RGX.search(text)
     return m.group(1).upper() if m else None

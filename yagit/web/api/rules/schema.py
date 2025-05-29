@@ -11,6 +11,10 @@ class RuleBase(BaseModel):
         None,
         description="Целевая ветка (обязательно для MR‑событий)",
     )
+    tracker_column_id: str = Field(
+        ...,
+        description="Айди колонки в трекере",
+    )
 
     @field_validator("target_branch", mode="before")
     def branch_required_for_mr(cls, v, info):  # noqa: N805
@@ -24,6 +28,10 @@ class RuleCreate(RuleBase):
     """Схема создания правила."""
 
     gitlab_project_id: int
+    tracker_board_id: int = Field(
+        ...,
+        description="Айди доски в трекере",
+    )
 
 
 class RuleRead(RuleBase):

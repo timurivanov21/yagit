@@ -1,13 +1,14 @@
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from yagit.db.dependencies import get_db_session
 from yagit.db.models.project import Project
 from yagit.services.gitlab_client import GitLabClient
+from yagit.services.tracker import TrackerClient
 
-from .schema import ProjectCreate, ProjectRead, ProjectsResponse
+from .schema import ProjectCreate, ProjectRead, ProjectsResponse, TrackerColumn, TrackerBoard
 
 router = APIRouter()
 
@@ -64,3 +65,38 @@ async def delete_project(
         )
     await session.delete(project)
     await session.commit()
+
+
+@router.get(
+    "/{project_id}/tracker_boards",
+    response_model=list[TrackerBoard],
+    status_code=status.HTTP_200_OK,
+)
+async def get_tracker_boards(
+    project_id: int = Path(..., ge=1),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """
+    Вернуть все доски Трекера *вместе* с их колонками.
+    """
+    project: Project | None = await session.get(Project, project_id)
+    if not project:
+        raise HTTPException(404, "Project not found")
+
+    async with TrackerClient(
+        token=project.tracker_token,
+        org_id=project.tracker_org_id,
+    ) as tr:
+        boards_raw = await tr.list_boards()
+
+    return [
+        TrackerBoard(
+            id=str(b["id"]),
+            name=b.get("name", ""),
+            columns=[
+                TrackerColumn(id=c["id"], name=c.get("display", ""))
+                for c in b.get("columns", [])
+            ],
+        )
+        for b in boards_raw
+    ]

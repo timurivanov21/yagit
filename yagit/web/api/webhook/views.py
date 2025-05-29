@@ -6,10 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from yagit.db.dependencies import get_db_session
-from yagit.db.models.automation_rule import AutomationRule
+from yagit.db.models.automation_rule import AutomationRule, GitEventType
 from yagit.db.models.project import Project
+from yagit.services.tracker import TrackerClient
 from yagit.web.api.webhook.schema import RuleDTO
-from yagit.web.api.webhook.utils import _parse_event_type, apply_rule, extract_issue_key
+from yagit.web.api.webhook.utils import _parse_event_type, extract_issue_key
 
 router = APIRouter()
 
@@ -33,41 +34,49 @@ async def gitlab_webhook(
     if event_type is None:
         return {"skipped": True}
 
-    rules_stmt = select(AutomationRule).where(
-        AutomationRule.project_id == project.id,
-        AutomationRule.event_type == event_type,
+    stmt = (
+        select(
+            AutomationRule.id,
+            AutomationRule.tracker_column_id,
+            Project.tracker_token,
+            Project.tracker_org_id,
+        )
+        .join(Project, AutomationRule.project_id == Project.id)
+        .where(
+            AutomationRule.project_id == project.id,
+            AutomationRule.event_type == event_type,
+        )
     )
     if event_type.name.startswith("MR_"):
-        # если правило указало конкретную ветку — матчим строго
-        rules_stmt = rules_stmt.where(
+        stmt = stmt.where(
             (AutomationRule.target_branch == target_branch)  # exact match
-            | (AutomationRule.target_branch.is_(None))  # «любая ветка»
+            | (AutomationRule.target_branch.is_(None))
         )
 
-    rows = list((await session.execute(rules_stmt)).scalars())
+    rows = (await session.execute(stmt)).all()
     if not rows:
         return {"matched": 0}
-    rule_dtos = [RuleDTO(
-        id=row.id,
-        tracker_column_id=row.tracker_column_id,
-        tracker_token=row.project.tracker_token,
-        tracker_org_id=row.project.tracker_org_id,
-    ) for row in rows]
+
+    rule_dtos = [RuleDTO(*row) for row in rows]
 
     issue_key = extract_issue_key(search_text)
     if not issue_key:
         return {"matched": 0, "reason": "no issue key"}
 
-    await asyncio.gather(
-        *(
-            apply_rule(
-                r,
-                issue_key,
-                event_type,
-                payload,
-            )
-            for r in rule_dtos
-        )
-    )
+    await session.close()
+
+    async with TrackerClient(
+        token=project.tracker_token,
+        org_id=project.tracker_org_id,
+    ) as tr:
+        async def apply_rule(dto: RuleDTO) -> None:
+            await tr.move_issue(issue_key, dto.tracker_column_id)
+
+            if event_type is GitEventType.PUSH:
+                urls = [c["url"] for c in payload.get("commits", [])]
+                if urls:
+                    await tr.add_comment(issue_key, "\n".join(urls))
+
+        await asyncio.gather(*(apply_rule(dto) for dto in rule_dtos))
 
     return {"accepted": len(rule_dtos)}

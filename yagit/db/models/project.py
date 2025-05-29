@@ -14,6 +14,7 @@ class Project(TimestampMixin, Base):
     name: str = Column(String(255), nullable=False, unique=True)
     tracker_token: str = Column(Text, nullable=False)
     tracker_org_id: str = Column(Text, nullable=True)
+    tracker_board_id: int = Column(Integer, nullable=True)
     gitlab_token: str = Column(Text, nullable=False)
     gitlab_webhook_secret: str = Column(Text, nullable=True)
     gitlab_project_id: int = Column(Integer, nullable=True)

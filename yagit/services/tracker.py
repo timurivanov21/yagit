@@ -85,7 +85,13 @@ class TrackerClient:
         return resp
 
     # ─────────────── public API ───────────────
+    async def list_boards(self) -> List[Dict[str, Any]]:
+        """GET /v3/boards — все доски организации."""
+        r = await self._request("GET", "/v3/boards")
+        return r.json()
+
     async def list_columns(self, board_id: str) -> List[Dict[str, Any]]:
+        """GET /v3/boards/{board_id}/columns"""
         r = await self._request("GET", f"/v3/boards/{board_id}/columns")
         return r.json()
 

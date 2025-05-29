@@ -32,6 +32,9 @@ async def create_rule(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
+    project.tracker_board_id = payload.tracker_board_id
+    project.tracker_column_id = payload.tracker_column_id
+
     dup_stmt = select(AutomationRule).where(
         and_(
             AutomationRule.project_id == project_id,
@@ -47,6 +50,7 @@ async def create_rule(
         project_id=project_id,
         event_type=payload.event_type,
         target_branch=payload.target_branch,
+        tracker_column_id=payload.tracker_column_id,
     )
     session.add(rule)
     await session.commit()

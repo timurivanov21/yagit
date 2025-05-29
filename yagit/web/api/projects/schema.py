@@ -46,3 +46,14 @@ class ProjectsResponse(BaseModel):
 class WebhookPayload(BaseModel):
     project_id: int
     gitlab_project_id: int
+
+
+class TrackerColumn(BaseModel):
+    id: str
+    name: str
+
+
+class TrackerBoard(BaseModel):
+    id: int
+    name: str
+    columns: List[TrackerColumn]
