@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Path
 from sqlalchemy import and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -23,17 +23,18 @@ async def list_rules(project_id: int, session: AsyncSession = Depends(get_db_ses
 @router.post("/", response_model=RuleRead, status_code=status.HTTP_201_CREATED)
 async def create_rule(
     payload: RuleCreate,
+    project_id: int = Path(..., ge=1),
     session: AsyncSession = Depends(get_db_session),
 ):
     """Создать правило автоматизации и синхронизировать веб‑хук GitLab."""
 
-    project = await session.get(Project, payload.project_id)
+    project = await session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
     dup_stmt = select(AutomationRule).where(
         and_(
-            AutomationRule.project_id == payload.project_id,
+            AutomationRule.project_id == project_id,
             AutomationRule.event_type == payload.event_type,
             AutomationRule.target_branch == payload.target_branch,
         ),
@@ -43,11 +44,9 @@ async def create_rule(
         raise HTTPException(status_code=409, detail="Rule already exists")
 
     rule = AutomationRule(
-        project_id=payload.project_id,
+        project_id=project_id,
         event_type=payload.event_type,
         target_branch=payload.target_branch,
-        tracker_column_id=payload.tracker_column_id,
-        tracker_column_name=payload.tracker_column_name,
     )
     session.add(rule)
     await session.commit()

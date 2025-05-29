@@ -10,6 +10,7 @@ class ProjectBase(BaseModel):
     name: str = Field(..., max_length=255)
     gitlab_token: str
     tracker_token: str
+    tracker_org_id: str
 
 
 class ProjectCreate(ProjectBase):

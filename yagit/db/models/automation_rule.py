@@ -48,8 +48,6 @@ class AutomationRule(TimestampMixin, Base):
         index=True,
     )
     target_branch: str | None = Column(String(255), nullable=True)
-    tracker_column_id: str = Column(String(64), nullable=False)
-    tracker_column_name: str | None = Column(String(255), nullable=True)
     project = relationship("Project", back_populates="rules")
 
     def __repr__(self) -> str:  # pragma: no cover
