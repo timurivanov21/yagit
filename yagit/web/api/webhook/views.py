@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,7 +8,8 @@ from starlette import status
 from yagit.db.dependencies import get_db_session
 from yagit.db.models.automation_rule import AutomationRule
 from yagit.db.models.project import Project
-from yagit.web.api.webhook.utils import _parse_event_type
+from yagit.web.api.webhook.schema import RuleDTO
+from yagit.web.api.webhook.utils import _parse_event_type, apply_rule, extract_issue_key
 
 router = APIRouter()
 
@@ -26,7 +29,7 @@ async def gitlab_webhook(
         raise HTTPException(status_code=401, detail="Invalid secret token")
 
     payload = await request.json()
-    event_type, target_branch = _parse_event_type(payload)
+    event_type, target_branch, search_text = _parse_event_type(payload)
     if event_type is None:
         return {"skipped": True}
 
@@ -38,21 +41,33 @@ async def gitlab_webhook(
         # если правило указало конкретную ветку — матчим строго
         rules_stmt = rules_stmt.where(
             (AutomationRule.target_branch == target_branch)  # exact match
-            | (AutomationRule.target_branch.is_(None))       # «любая ветка»
+            | (AutomationRule.target_branch.is_(None))  # «любая ветка»
         )
 
-    rules = list((await session.execute(rules_stmt)).scalars())
-    if not rules:
+    rows = list((await session.execute(rules_stmt)).scalars())
+    if not rows:
         return {"matched": 0}
+    rule_dtos = [RuleDTO(
+        id=row.id,
+        tracker_column_id=row.tracker_column_id,
+        tracker_token=row.project.tracker_token,
+        tracker_org_id=row.project.tracker_org_id,
+    ) for row in rows]
 
-    # for rule in rules:
-    #     asyncio.create_task(
-    #         _handle_rule(
-    #             rule=rule,
-    #             tracker_token=project.tracker_token,
-    #             tracker_url=project.tracker_url,
-    #             git_payload=payload,
-    #         )
-    #     )
+    issue_key = extract_issue_key(search_text)
+    if not issue_key:
+        return {"matched": 0, "reason": "no issue key"}
 
-    return {"accepted": len(rules)}
+    await asyncio.gather(
+        *(
+            apply_rule(
+                r,
+                issue_key,
+                event_type,
+                payload,
+            )
+            for r in rule_dtos
+        )
+    )
+
+    return {"accepted": len(rule_dtos)}

@@ -13,6 +13,7 @@ class Project(TimestampMixin, Base):
     id: int = Column(Integer, primary_key=True, index=True)
     name: str = Column(String(255), nullable=False, unique=True)
     tracker_token: str = Column(Text, nullable=False)
+    tracker_org_id: str = Column(Text, nullable=True)
     gitlab_token: str = Column(Text, nullable=False)
     gitlab_webhook_secret: str = Column(Text, nullable=True)
     gitlab_project_id: int = Column(Integer, nullable=True)
