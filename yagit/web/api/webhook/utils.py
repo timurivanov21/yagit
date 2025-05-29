@@ -23,8 +23,7 @@ def _parse_event_type(payload: dict) -> tuple[GitEventType | None, str | None, s
         is_create = before == "0000000000000000000000000000000000000000"
         branch = payload["ref"].removeprefix("refs/heads/")
         event = GitEventType.BRANCH_CREATE if is_create else GitEventType.PUSH
-        commits_txt = " ".join(c["message"] for c in payload.get("commits", []))
-        return event, branch, f"{branch} {commits_txt}"
+        return event, branch, branch
     if payload.get("event_type") == "merge_request" and payload.get("object_kind") == "merge_request":
         action = payload["object_attributes"]["action"]
         mapping = {
@@ -38,8 +37,3 @@ def _parse_event_type(payload: dict) -> tuple[GitEventType | None, str | None, s
         return event, tgt_branch, src
 
     return None, None, ""
-
-
-def extract_issue_key(text: str) -> str | None:
-    m = _ISSUE_RGX.search(text)
-    return m.group(1).upper() if m else None

@@ -10,7 +10,7 @@ from yagit.db.models.automation_rule import AutomationRule, GitEventType
 from yagit.db.models.project import Project
 from yagit.services.tracker import TrackerClient
 from yagit.web.api.webhook.schema import RuleDTO
-from yagit.web.api.webhook.utils import _parse_event_type, extract_issue_key
+from yagit.web.api.webhook.utils import _parse_event_type
 
 router = APIRouter()
 
@@ -30,7 +30,7 @@ async def gitlab_webhook(
         raise HTTPException(status_code=401, detail="Invalid secret token")
 
     payload = await request.json()
-    event_type, target_branch, search_text = _parse_event_type(payload)
+    event_type, target_branch, issue_key = _parse_event_type(payload)
     if event_type is None:
         return {"skipped": True}
 
@@ -59,7 +59,7 @@ async def gitlab_webhook(
 
     rule_dtos = [RuleDTO(*row) for row in rows]
 
-    issue_key = extract_issue_key(search_text)
+    issue_key = issue_key.upper()
     if not issue_key:
         return {"matched": 0, "reason": "no issue key"}
 

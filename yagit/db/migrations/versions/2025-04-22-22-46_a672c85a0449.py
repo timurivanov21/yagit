@@ -49,6 +49,7 @@ def upgrade() -> None:
             "event_type",
             sa.Enum(
                 "BRANCH_CREATE",
+                "PUSH",
                 "MERGE_REQUEST_OPENED",
                 "MERGE_REQUEST_MERGED",
                 "MERGE_REQUEST_CLOSED",
