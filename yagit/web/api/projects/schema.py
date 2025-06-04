@@ -16,10 +16,20 @@ class ProjectBase(BaseModel):
 class ProjectCreate(ProjectBase):
     """Схема создания проекта."""
 
+class ProjectUpdate(BaseModel):
+    name: str | None = Field(default=None, max_length=255)
+    tracker_token: str | None = None
+    tracker_org_id: str | None = None
+    tracker_board_id: int | None = None
+    gitlab_token: str | None = None
+    gitlab_webhook_secret: str | None = None
+    gitlab_project_id: int | None = None
+
 
 class ProjectRead(BaseModel):
     id: int
     name: str = Field(..., max_length=255)
+    gitlab_project_id: int | None = None
 
     class Config:
         orm_mode = True

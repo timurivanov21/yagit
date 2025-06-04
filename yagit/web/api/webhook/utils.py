@@ -17,6 +17,9 @@ def _parse_event_type(payload: dict) -> tuple[GitEventType | None, str | None, s
     Определяем наш Enum-тип и, при необходимости, целевую ветку.
     Возвращаем (event_type | None, target_branch | None).
     """
+    if payload.get("event_name") == "tag_push" and payload.get("object_kind") == "tag_push":
+        tag = payload["ref"].removeprefix("refs/tags/")
+        return GitEventType.TAG_PUSH, tag, ""  # target_branch = tag, src = ""
     if payload.get("event_name") == "push" and payload.get("object_kind") == "push":
         before = payload.get("before", "")
         # all-zero SHA → это именно создание ветки
