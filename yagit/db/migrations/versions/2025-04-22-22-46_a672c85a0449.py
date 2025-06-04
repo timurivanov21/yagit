@@ -50,6 +50,7 @@ def upgrade() -> None:
             sa.Enum(
                 "BRANCH_CREATE",
                 "PUSH",
+                "TAG_PUSH"
                 "MERGE_REQUEST_OPENED",
                 "MERGE_REQUEST_MERGED",
                 "MERGE_REQUEST_CLOSED",
