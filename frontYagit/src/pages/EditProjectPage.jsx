@@ -118,7 +118,7 @@ export const EditProjectPage = () => {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (step) => {
     if (!step.id) return;
     try {
       const res = await fetch(`${apiUrl}/api/projects/${id}/rules/${step.id}`, {
@@ -163,7 +163,7 @@ export const EditProjectPage = () => {
               <span>{actionLabel(step.gitAction)}</span>
               <span style={styles.arrow}>→</span>
               <span>{`Перемещение в “${columnName}”`}</span>
-              <button onClick={handleDelete} style={styles.deleteButton}>
+              <button onClick={() => handleDelete(step)} style={styles.deleteButton}>
                 <img src={TrashBin} alt="Logo" style={styles.icon}/>
               </button>
             </div>
@@ -208,7 +208,7 @@ export const EditProjectPage = () => {
             </div>
 
             <div style={styles.modalCol}>
-  <h3 style={styles.modalTitle}>Перемещение в Tracker</h3>
+            <h3 style={styles.modalTitle}>Перемещение в Tracker</h3>
 
           <select
             value={selectedBoardId}

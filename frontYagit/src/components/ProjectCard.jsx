@@ -2,7 +2,10 @@ import TrashBin from "../assets/TrashBin.svg";
 
 export const ProjectCard = ({ name, onDelete, onClick }) => {
   return (
-    <div style={styles.card} onClick={onClick}>
+    <div style={styles.card} onClick={(e) => {
+        e.stopPropagation();
+        onDelete();
+      }}>
       <span style={styles.name}>{name}</span>
       <button onClick={onDelete} style={styles.deleteButton}>
         <img src={TrashBin} alt="Logo" style={styles.icon}/>
