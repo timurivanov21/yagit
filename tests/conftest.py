@@ -1,9 +1,9 @@
 from typing import Any, AsyncGenerator
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
-from redis.asyncio import ConnectionPool
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -85,7 +85,6 @@ async def dbsession(
 @pytest.fixture
 def fastapi_app(
     dbsession: AsyncSession,
-    fake_redis_pool: ConnectionPool,
 ) -> FastAPI:
     """
     Fixture for creating FastAPI app.
@@ -110,3 +109,27 @@ async def client(
     """
     async with AsyncClient(app=fastapi_app, base_url="http://test", timeout=2.0) as ac:
         yield ac
+
+
+@pytest.fixture
+def mock_response():
+    response = MagicMock()
+    response.raise_for_status.return_value = None
+    response.json.return_value = {"ok": True}
+    return response
+
+
+@pytest.fixture
+def mock_httpx_client(mocker, mock_response):
+    mock_client = mocker.patch(
+        "yagit.services.gitlab_client.httpx.AsyncClient",
+        autospec=True,
+    )
+
+    instance = mock_client.return_value
+
+    instance.get = AsyncMock(return_value=mock_response)
+    instance.post = AsyncMock(return_value=mock_response)
+    instance.put = AsyncMock(return_value=mock_response)
+
+    return instance

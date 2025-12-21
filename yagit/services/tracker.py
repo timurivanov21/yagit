@@ -63,7 +63,7 @@ class TrackerClient:
         )
         return self
 
-    async def __aexit__(self, *_) -> None:  # noqa: D401
+    async def __aexit__(self, *_) -> None:
         if self._client:
             await self._client.aclose()
 
@@ -126,7 +126,8 @@ class TrackerClient:
 
     @staticmethod
     def _find_transition_id(
-        transitions: List[Dict[str, Any]], target_status: str
+        transitions: List[Dict[str, Any]],
+        target_status: str,
     ) -> str:
         for tr in transitions:
             status = tr.get("to")

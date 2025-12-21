@@ -1,5 +1,5 @@
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, status, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -8,7 +8,14 @@ from yagit.db.models.project import Project
 from yagit.services.gitlab_client import GitLabClient
 from yagit.services.tracker import TrackerClient
 
-from .schema import ProjectCreate, ProjectRead, ProjectsResponse, TrackerColumn, TrackerBoard, ProjectUpdate
+from .schema import (
+    ProjectCreate,
+    ProjectRead,
+    ProjectsResponse,
+    ProjectUpdate,
+    TrackerBoard,
+    TrackerColumn,
+)
 
 router = APIRouter()
 
@@ -24,7 +31,7 @@ async def create_project(
     payload: ProjectCreate,
     session: AsyncSession = Depends(get_db_session),
 ) -> ProjectsResponse:
-    project = Project(**payload.dict())
+    project = Project(**payload.model_dump())
     session.add(project)
     await session.commit()
     await session.refresh(project)
@@ -39,6 +46,7 @@ async def create_project(
         project_id=project.id,
         repositories=projects,
     )
+
 
 @router.put("/{project_id}", response_model=ProjectRead)
 async def update_project(
@@ -56,6 +64,7 @@ async def update_project(
     await session.commit()
     await session.refresh(project)
     return project
+
 
 @router.get("/{project_id}", response_model=ProjectRead)
 async def get_project(project_id: int, session: AsyncSession = Depends(get_db_session)):
@@ -97,7 +106,7 @@ async def get_tracker_boards(
     """
     project: Project | None = await session.get(Project, project_id)
     if not project:
-        raise HTTPException(404, "Project not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Project not found")
 
     async with TrackerClient(
         token=project.tracker_token,
