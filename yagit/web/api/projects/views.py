@@ -8,7 +8,7 @@ from yagit.db.models.project import Project
 from yagit.services.gitlab_client import GitLabClient
 from yagit.services.tracker import TrackerClient
 
-from .schema import ProjectCreate, ProjectRead, ProjectsResponse, TrackerColumn, TrackerBoard
+from .schema import ProjectCreate, ProjectRead, ProjectsResponse, TrackerColumn, TrackerBoard, ProjectUpdate
 
 router = APIRouter()
 
@@ -40,6 +40,22 @@ async def create_project(
         repositories=projects,
     )
 
+@router.put("/{project_id}", response_model=ProjectRead)
+async def update_project(
+    project_id: int,
+    payload: ProjectUpdate,
+    session: AsyncSession = Depends(get_db_session),
+):
+    project: Project | None = await session.get(Project, project_id)
+    if not project:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    for field, value in payload.dict(exclude_unset=True).items():
+        setattr(project, field, value)
+
+    await session.commit()
+    await session.refresh(project)
+    return project
 
 @router.get("/{project_id}", response_model=ProjectRead)
 async def get_project(project_id: int, session: AsyncSession = Depends(get_db_session)):

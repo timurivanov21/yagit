@@ -47,6 +47,7 @@ async def gitlab_webhook(
             AutomationRule.event_type == event_type,
         )
     )
+    print(event_type.name)
     if event_type.name.startswith("MR_"):
         stmt = stmt.where(
             (AutomationRule.target_branch == target_branch)  # exact match

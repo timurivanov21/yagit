@@ -13,6 +13,7 @@ class GitEventType(StrEnum):
 
     BRANCH_CREATE = "branch_create"
     PUSH = "push"
+    TAG_PUSH = "tag_push"
     MERGE_REQUEST_OPENED = "merge_request_opened"
     MERGE_REQUEST_MERGED = "merge_request_merged"
     MERGE_REQUEST_CLOSED = "merge_request_closed"
