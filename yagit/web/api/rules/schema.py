@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel, Field, field_validator
 
 from yagit.db.models.automation_rule import GitEventType
@@ -17,7 +19,9 @@ class RuleBase(BaseModel):
     )
 
     @field_validator("target_branch", mode="before")
-    def branch_required_for_mr(cls, v, info):  # noqa: N805
+    def branch_required_for_mr(cls, v: Any, info: Any):  # noqa: N805
+        """Validate target branch is required for merge request rules."""
+
         event: GitEventType = info.data.get("event_type")  # type: ignore[attr-defined]
         if event and event.is_merge and not v:
             raise ValueError("target_branch is required for merge request rules")

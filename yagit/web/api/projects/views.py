@@ -1,5 +1,5 @@
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, status, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -8,7 +8,14 @@ from yagit.db.models.project import Project
 from yagit.services.gitlab_client import GitLabClient
 from yagit.services.tracker import TrackerClient
 
-from .schema import ProjectCreate, ProjectRead, ProjectsResponse, TrackerColumn, TrackerBoard, ProjectUpdate
+from .schema import (
+    ProjectCreate,
+    ProjectRead,
+    ProjectsResponse,
+    ProjectUpdate,
+    TrackerBoard,
+    TrackerColumn,
+)
 
 router = APIRouter()
 
@@ -40,6 +47,7 @@ async def create_project(
         repositories=projects,
     )
 
+
 @router.put("/{project_id}", response_model=ProjectRead)
 async def update_project(
     project_id: int,
@@ -56,6 +64,7 @@ async def update_project(
     await session.commit()
     await session.refresh(project)
     return project
+
 
 @router.get("/{project_id}", response_model=ProjectRead)
 async def get_project(project_id: int, session: AsyncSession = Depends(get_db_session)):

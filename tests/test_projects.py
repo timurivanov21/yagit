@@ -34,7 +34,7 @@ def make_test_cases(count: int = 7):
                 payload,
                 gitlab_projects,
                 id=f"repos={len(gitlab_projects)}",
-            )
+            ),
         )
 
     return cases
@@ -101,7 +101,7 @@ TRACKER_BOARDS_CASES = [
                     {"id": "c1", "display": "To Do"},
                     {"id": "c2", "display": "In Progress"},
                 ],
-            }
+            },
         ],
         id="one-board-with-columns",
     ),
@@ -111,7 +111,7 @@ TRACKER_BOARDS_CASES = [
                 "id": 10,
                 "name": "Board without columns",
                 "columns": [],
-            }
+            },
         ],
         id="board-without-columns",
     ),
@@ -134,18 +134,17 @@ TRACKER_BOARDS_CASES = [
 ]
 
 
-
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "payload, gitlab_projects",
     CREATE_PROJECT_CASES,
 )
 async def test_create_project_success(
-        client,
-        dbsession,
-        mocker: MockerFixture,
-        payload,
-        gitlab_projects,
+    client,
+    dbsession,
+    mocker: MockerFixture,
+    payload,
+    gitlab_projects,
 ):
     mock_gl = mocker.patch(
         "yagit.web.api.projects.views.GitLabClient",
@@ -164,7 +163,7 @@ async def test_create_project_success(
     assert isinstance(body["project_id"], int)
 
     result = await dbsession.execute(
-        select(Project).where(Project.name == payload["name"])
+        select(Project).where(Project.name == payload["name"]),
     )
     project = result.scalar_one()
 
@@ -174,8 +173,8 @@ async def test_create_project_success(
 
 @pytest.mark.anyio
 async def test_create_project_invalid_gitlab_token(
-        client,
-        mocker: MockerFixture,
+    client,
+    mocker: MockerFixture,
 ):
     mock_gl = mocker.patch(
         "yagit.web.api.projects.views.GitLabClient",
@@ -226,9 +225,7 @@ async def test_create_project_validation_error_missing_fields(
     body = response.json()
 
     error_fields = [
-        err["loc"][-1]
-        for err in body["detail"]
-        if err["type"] == "missing"
+        err["loc"][-1] for err in body["detail"] if err["type"] == "missing"
     ]
 
     assert missing_field in error_fields
@@ -348,12 +345,8 @@ async def test_delete_project_success(
     deleted = await dbsession.get(Project, project_to_delete.id)
     assert deleted is None
 
-    remaining_ids = {
-        p.id for p in await dbsession.scalars(select(Project))
-    }
-    expected_ids = {
-        p.id for p in projects if p.id != project_to_delete.id
-    }
+    remaining_ids = {p.id for p in await dbsession.scalars(select(Project))}
+    expected_ids = {p.id for p in projects if p.id != project_to_delete.id}
 
     assert remaining_ids == expected_ids
 

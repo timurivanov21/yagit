@@ -1,6 +1,6 @@
 import asyncio
 
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -47,11 +47,10 @@ async def gitlab_webhook(
             AutomationRule.event_type == event_type,
         )
     )
-    print(event_type.name)
     if event_type.name.startswith("MR_"):
         stmt = stmt.where(
             (AutomationRule.target_branch == target_branch)  # exact match
-            | (AutomationRule.target_branch.is_(None))
+            | (AutomationRule.target_branch.is_(None)),
         )
 
     rows = (await session.execute(stmt)).all()
@@ -70,6 +69,7 @@ async def gitlab_webhook(
         token=project.tracker_token,
         org_id=project.tracker_org_id,
     ) as tr:
+
         async def apply_rule(dto: RuleDTO) -> None:
             await tr.move_issue(issue_key, dto.tracker_column_id)
 

@@ -3,7 +3,7 @@ from pytest_mock import MockerFixture
 from sqlalchemy import select
 from starlette import status
 
-from yagit.db.models.automation_rule import GitEventType, AutomationRule
+from yagit.db.models.automation_rule import AutomationRule, GitEventType
 from yagit.db.models.project import Project
 
 CREATE_RULE_CASES = [
@@ -169,11 +169,7 @@ async def test_create_rule_validation_error_missing_required_fields(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     detail = response.json()["detail"]
-    error_fields = [
-        err["loc"][-1]
-        for err in detail
-        if err["type"] == "missing"
-    ]
+    error_fields = [err["loc"][-1] for err in detail if err["type"] == "missing"]
 
     assert missing_field in error_fields
 
@@ -364,7 +360,7 @@ async def test_delete_rule_success(
     rule_to_delete = rules[0]
 
     response = await client.delete(
-        f"/api/projects/{project.id}/rules/{rule_to_delete.id}"
+        f"/api/projects/{project.id}/rules/{rule_to_delete.id}",
     )
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
@@ -373,9 +369,7 @@ async def test_delete_rule_success(
     deleted = await dbsession.get(AutomationRule, rule_to_delete.id)
     assert deleted is None
 
-    remaining_ids = {
-        r.id for r in await dbsession.scalars(select(AutomationRule))
-    }
+    remaining_ids = {r.id for r in await dbsession.scalars(select(AutomationRule))}
     expected_ids = {r.id for r in rules[1:]}
 
     assert remaining_ids == expected_ids
@@ -396,9 +390,7 @@ async def test_delete_rule_not_found(
     await dbsession.commit()
     await dbsession.refresh(project)
 
-    response = await client.delete(
-        f"/api/projects/{project.id}/rules/999999"
-    )
+    response = await client.delete(f"/api/projects/{project.id}/rules/999999")
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json()["detail"] == "Rule not found"
@@ -436,9 +428,7 @@ async def test_delete_rule_wrong_project(
     await dbsession.commit()
     await dbsession.refresh(rule)
 
-    response = await client.delete(
-        f"/api/projects/{project_2.id}/rules/{rule.id}"
-    )
+    response = await client.delete(f"/api/projects/{project_2.id}/rules/{rule.id}")
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json()["detail"] == "Rule not found"

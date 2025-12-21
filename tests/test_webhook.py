@@ -2,7 +2,7 @@ import pytest
 from pytest_mock import MockerFixture
 from starlette import status
 
-from yagit.db.models.automation_rule import GitEventType, AutomationRule
+from yagit.db.models.automation_rule import AutomationRule, GitEventType
 from yagit.db.models.project import Project
 
 
@@ -206,7 +206,7 @@ async def test_gitlab_webhook_push_single_rule(
         "commits": [
             {"url": "http://commit/1"},
             {"url": "http://commit/2"},
-        ]
+        ],
     }
 
     response = await client.post(

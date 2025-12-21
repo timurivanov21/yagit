@@ -1,5 +1,5 @@
 from typing import Any, AsyncGenerator
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from fastapi import FastAPI

@@ -16,6 +16,7 @@ class ProjectBase(BaseModel):
 class ProjectCreate(ProjectBase):
     """Схема создания проекта."""
 
+
 class ProjectUpdate(BaseModel):
     name: str | None = Field(default=None, max_length=255)
     tracker_token: str | None = None

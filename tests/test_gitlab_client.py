@@ -29,8 +29,8 @@ def gitlab_client(mocker):
 
 @pytest.mark.anyio
 async def test_gitlab_client_get(
-        mock_httpx_client,
-        mock_response,
+    mock_httpx_client,
+    mock_response,
 ):
     client = GitLabClient(token="token")
 
@@ -45,8 +45,8 @@ async def test_gitlab_client_get(
 
 @pytest.mark.anyio
 async def test_gitlab_client_post(
-        mock_httpx_client,
-        mock_response,
+    mock_httpx_client,
+    mock_response,
 ):
     client = GitLabClient(token="token")
 
@@ -66,8 +66,8 @@ async def test_gitlab_client_post(
 
 @pytest.mark.anyio
 async def test_gitlab_client_put(
-        mock_httpx_client,
-        mock_response,
+    mock_httpx_client,
+    mock_response,
 ):
     client = GitLabClient(token="token")
 
@@ -90,8 +90,8 @@ import httpx
 
 @pytest.mark.anyio
 async def test_gitlab_client_get_raises_http_error(
-        mock_httpx_client,
-        mock_response,
+    mock_httpx_client,
+    mock_response,
 ):
     mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
         message="Forbidden",
@@ -107,7 +107,7 @@ async def test_gitlab_client_get_raises_http_error(
 
 @pytest.mark.anyio
 async def test_list_branches(
-        mocker,
+    mocker,
 ):
     client = GitLabClient(token="token")
 
@@ -119,22 +119,20 @@ async def test_list_branches(
                 {"name": "main"},
                 {"name": "develop"},
                 {"name": "feature/test"},
-            ]
+            ],
         ),
     )
 
     branches = await client.list_branches(project_id=123)
 
-    client._get.assert_awaited_once_with(
-        "/projects/123/repository/branches"
-    )
+    client._get.assert_awaited_once_with("/projects/123/repository/branches")
 
     assert branches == ["main", "develop", "feature/test"]
 
 
 @pytest.mark.anyio
 async def test_list_projects(
-        mocker,
+    mocker,
 ):
     client = GitLabClient(token="token")
 
@@ -168,7 +166,7 @@ async def test_list_projects(
 
 @pytest.mark.anyio
 async def test_list_projects_empty(
-        mocker,
+    mocker,
 ):
     client = GitLabClient(token="token")
 
@@ -188,10 +186,7 @@ async def test_list_projects_empty(
     VERIFY_TOKEN_CASES,
 )
 def test_verify_gitlab_token(header_token, expected_token, result):
-    assert (
-        GitLabClient.verify_gitlab_token(header_token, expected_token)
-        is result
-    )
+    assert GitLabClient.verify_gitlab_token(header_token, expected_token) is result
 
 
 @pytest.mark.anyio
@@ -227,7 +222,7 @@ async def test_ensure_hook_updates_existing_hook(
         {
             "id": 42,
             "url": "https://example.com/webhook",
-        }
+        },
     ]
 
     await gitlab_client.ensure_hook(

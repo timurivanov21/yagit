@@ -1,9 +1,14 @@
-import pytest
-import httpx
-
 from unittest.mock import AsyncMock
 
-from yagit.services.tracker import TrackerClient, TrackerError, IssueNotFound, TransitionNotFound
+import httpx
+import pytest
+
+from yagit.services.tracker import (
+    IssueNotFound,
+    TrackerClient,
+    TrackerError,
+    TransitionNotFound,
+)
 
 FIND_TRANSITION_CASES = [
     pytest.param(
@@ -27,7 +32,11 @@ FIND_TRANSITION_CASES = [
 ]
 
 
-def _make_response(status_code: int, url: str = "https://api.tracker.yandex.net/v3/boards", text: str = "oops"):
+def _make_response(
+    status_code: int,
+    url: str = "https://api.tracker.yandex.net/v3/boards",
+    text: str = "oops",
+):
     """
     httpx.Response желательно создавать с Request, чтобы .text / .json работали предсказуемо.
     """
@@ -240,8 +249,8 @@ async def test_move_issue_success(mocker):
                 {
                     "id": "tr-1",
                     "to": {"id": "inProgress", "key": "IN_PROGRESS"},
-                }
-            ]
+                },
+            ],
         ),
     )
 
@@ -279,8 +288,8 @@ async def test_move_issue_transition_not_found(mocker):
                 {
                     "id": "tr-1",
                     "to": {"id": "todo", "key": "TODO"},
-                }
-            ]
+                },
+            ],
         ),
     )
 
@@ -323,8 +332,8 @@ async def test_move_issue_execute_raises_tracker_error(mocker):
                 {
                     "id": "tr-1",
                     "to": {"id": "done", "key": "DONE"},
-                }
-            ]
+                },
+            ],
         ),
     )
 
