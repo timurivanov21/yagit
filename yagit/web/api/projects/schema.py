@@ -22,7 +22,7 @@ class ProjectRead(BaseModel):
     name: str = Field(..., max_length=255)
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ProjectReadWithRules(ProjectRead):

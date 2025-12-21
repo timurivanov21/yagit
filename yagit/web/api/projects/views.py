@@ -24,7 +24,7 @@ async def create_project(
     payload: ProjectCreate,
     session: AsyncSession = Depends(get_db_session),
 ) -> ProjectsResponse:
-    project = Project(**payload.dict())
+    project = Project(**payload.model_dump())
     session.add(project)
     await session.commit()
     await session.refresh(project)
@@ -81,7 +81,7 @@ async def get_tracker_boards(
     """
     project: Project | None = await session.get(Project, project_id)
     if not project:
-        raise HTTPException(404, "Project not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Project not found")
 
     async with TrackerClient(
         token=project.tracker_token,
