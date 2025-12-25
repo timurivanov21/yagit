@@ -1,14 +1,26 @@
 import TrashBin from "../assets/TrashBin.svg";
 
-export const ProjectCard = ({ name, onDelete, onClick }) => {
+export const ProjectCard = ({ projectId, name, onDelete, onClick }) => {
   return (
-    <div style={styles.card} onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}>
+    <div
+      data-testid={`project-card-${projectId}`}
+      style={styles.card}
+      onClick={() => onClick?.()}
+    >
       <span style={styles.name}>{name}</span>
-      <button onClick={onClick} style={styles.deleteButton}>
-        <img src={TrashBin} alt="Logo" style={styles.icon}/>
+
+      <button
+        type="button"
+        data-testid={`project-delete-${projectId}`}
+        aria-label={`Delete project ${name}`}
+        style={styles.deleteButton}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onDelete?.();
+        }}
+      >
+        <img src={TrashBin} alt="Delete" style={styles.icon} />
       </button>
     </div>
   );
@@ -25,6 +37,7 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     boxShadow: "2px 2px 8px rgba(0,0,0,0.2)",
+    cursor: "pointer",
   },
   name: {
     fontWeight: "bold",
@@ -32,8 +45,11 @@ const styles = {
   deleteButton: {
     background: "none",
     border: "none",
-    color: "white",
-    fontSize: "20px",
     cursor: "pointer",
+  },
+  icon: {
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
   },
 };

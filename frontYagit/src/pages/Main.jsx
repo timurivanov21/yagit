@@ -59,6 +59,7 @@ export const Main = () => {
         {projects.map((project) => (
           <ProjectCard
             key={project.id}
+            projectId={project.id}
             name={project.name}
             onClick={() =>
               navigate("/project/edit", {
